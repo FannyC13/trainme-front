@@ -1,0 +1,317 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/**NAV BAR**/
+
+.header {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  background-color: #97ccb8;
+  padding: 0rem 4rem;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.logo img {
+  height: 60px;
+}
+
+.navigation ul {
+  list-style: none;
+  display: flex;
+  padding: 0 1rem;
+  margin: 0;
+  height: 100%;
+}
+
+.nav-link {
+  text-decoration: none;
+}
+
+.nav-link a {
+  text-decoration: none;
+  color: white;
+}
+
+.nav-link a:hover {
+  color: #f0f0f0;
+}
+.nav-item {
+  font-family: Arial, sans-serif;
+  padding: 2rem 2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+}
+
+/***CONTENT***/
+
+.content {
+  margin: 10px;
+  margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#subject-select,
+#course-name {
+  width: 50%;
+  padding: 10px;
+  margin-top: 10px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 0.4px solid gray;
+}
+
+.section {
+  padding: 1rem 2rem 2rem 2rem;
+  border: 3px solid #ddd;
+  border-radius: 20px;
+  background-color: #f9f9f9;
+  font-size: 0.6rem;
+}
+
+.upload-box {
+  border: 2px dashed #97ccb8;
+  background-color: white;
+  border-radius: 20px;
+  padding: 4rem;
+  margin-top: 2rem;
+  margin-bottom: 0rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-content img {
+  width: 100px;
+  margin-bottom: 2rem;
+}
+
+.upload-content p {
+  font-size: 0.7rem;
+}
+
+/**FONCTIONNEMENT FOOTER**/
+.fonctionnement {
+  padding: 1rem 2rem 2rem 2rem;
+  border: 3px solid #ddd;
+  text-align: center;
+  font-size: 0.8rem;
+  margin: auto;
+  margin-top: 200px;
+  margin-bottom: 50px;
+}
+
+.fonctionnement h2 {
+  margin-bottom: 20px;
+}
+
+.fonctionnement p {
+  margin: 20px 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.fonctionnement ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.fonctionnement ul li {
+  position: relative;
+  margin-bottom: 10px;
+  padding-left: 20px;
+}
+
+.fonctionnement ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  font-size: 1rem;
+}
+
+/**BUTTON**/
+
+button {
+  background-color: #97ccb8;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+button:hover {
+  background-color: #85bba0;
+}
+
+/**ABOUT PAGE**/
+
+.about-section {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f9f9f9;
+  border: 3px solid #ddd;
+  border-radius: 20px;
+}
+
+.about-section h1 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.about-section p {
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+/**TEAM AND IMAGES**/
+
+.team {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.team-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-pic {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #97ccb8;
+  margin-bottom: 0.5rem;
+}
+
+.team-member p {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.generate-button-container {
+  margin-bottom: 20px;
+}
+
+.summary-viewer {
+  margin-top: 20px;
+}
+
+iframe {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+}
+
+/**EXOS PAGE**/
+
+.detail-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.detail-button {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.detail-button.active {
+  background-color:  #ccc;
+  color: white;
+}
+
+.loading-indicator {
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 20px;
+  color: #007bff;
+}
+
+.correct-answer {
+  background-color: green !important;
+  color: white;
+}
+
+.incorrect-answer {
+  background-color: red !important;
+  color: white;
+}
+
+.correct-but-not-answered {
+  background-color: green !important;
+}
+
+.correct-answer-label {
+  color: green !important;
+}
+
+.incorrect-answer-label {
+  color: red !important;
+}
+
+.correct-but-not-answered-label {
+  color: green !important;
+}
+
+.question-container p, .result h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.option label, .result p{
+  font-size: 0.9rem;
+
+}
+
+.option label {
+    margin-left: 10px;
+}
