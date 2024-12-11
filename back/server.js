@@ -2,12 +2,17 @@ const express = require('express')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
-const cors = require('cors') // Importer cors
+const cors = require('cors')
 
 const app = express()
 const uploadFolder = path.join(__dirname, 'course')
+const { createProxyMiddleware } = require('http-proxy-middleware')
 
-// Autoriser toutes les origines (vous pouvez personnaliser selon vos besoins)
+app.use('/api', createProxyMiddleware({
+  target: 'http://127.0.0.1:5000',
+  changeOrigin: true
+}))
+
 app.use(cors())
 
 const storage = multer.diskStorage({
@@ -36,7 +41,7 @@ app.delete('/delete', (req, res) => {
   })
 })
 
-const SERVER = 8080
+const SERVER = 8084
 module.exports = { SERVER }
 
 app.listen(SERVER, () => console.log(`Serveur démarré sur le port  ${SERVER}`))

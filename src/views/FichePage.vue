@@ -97,7 +97,7 @@ export default {
       selectedSubject: '',
       courseName: '',
       detailLevel: 'Détaillé',
-      server: 8080
+      server: 8084
     }
   },
   methods: {
@@ -150,36 +150,55 @@ export default {
     },
     async generateSummary () {
       this.loading = true
+      const fileName = this.uploadedFiles[0].name
+      console.log('File', fileName)
       try {
-        const generatedContent = `
-          ${this.selectedSubject} : ${this.courseName}
-          Niveau de détail : ${this.detailLevel}
+        if (this.uploadedFiles.length === 0) {
+          alert('Veuillez télécharger un fichier avant de générer une synthèse.')
+          return
+        }
 
-          Introduction :
-          Ceci est une fiche de cours générée automatiquement. Vous trouverez ici une synthèse des notions essentielles.
+        const pdfName = this.uploadedFiles[0].name
+        const response = await fetch(`http://localhost:${this.server}/process/pdf`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            pdf_name: pdfName,
+            max_length: 130,
+            min_length: 30,
+            model: 'facebook/bart-large-cnn'
+          })
+        })
 
-          Points principaux :
-          - Concept 1 : Explication et détails
-          - Concept 2 : Applications pratiques
-          - Concept 3 : Exemples
+        const data = await response.json()
 
-          Conclusion :
-          Cette fiche est conçue pour vous aider à réviser efficacement.
+        if (response.ok) {
+          const generatedContent = `
+            ${this.selectedSubject} : ${this.courseName}
+
+          Synthèse générée automatiquement :
+          ${data.summary}
         `
-        const pdf = new jsPDF()
-        pdf.setFontSize(16)
-        pdf.text(`Fiche de cours - ${this.selectedSubject}`, 10, 10)
-        pdf.setFontSize(12)
-        pdf.text(generatedContent, 10, 20, { maxWidth: 180 })
+          const pdf = new jsPDF()
+          pdf.setFontSize(16)
+          pdf.text(`Fiche de cours - ${this.selectedSubject}`, 10, 10)
+          pdf.setFontSize(12)
+          pdf.text(generatedContent, 10, 20, { maxWidth: 180 })
 
-        const pdfBlob = pdf.output('blob')
-        this.courseSummaryUrl = URL.createObjectURL(pdfBlob)
+          const pdfBlob = pdf.output('blob')
+          this.courseSummaryUrl = URL.createObjectURL(pdfBlob)
+        } else {
+          alert(`Erreur : ${data.error || 'Une erreur est survenue.'}`)
+        }
       } catch (error) {
-        alert('Erreur lors de la génération du PDF : ' + error.message)
+        alert(`Erreur lors de la génération : ${error.message}`)
       } finally {
         this.loading = false
       }
     },
+
     getFileIcon (fileName) {
       const extension = fileName.split('.').pop().toLowerCase()
       const icons = {

@@ -105,7 +105,7 @@ export default {
       score: 0,
       selectedSubject: '',
       courseName: '',
-      server: 8080
+      server: 8084
     }
   },
   methods: {
