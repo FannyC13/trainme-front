@@ -93,7 +93,6 @@
 <script>
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
-
 export default {
   name: 'ExosPage',
   data () {
@@ -105,7 +104,8 @@ export default {
       showResult: false,
       score: 0,
       selectedSubject: '',
-      courseName: ''
+      courseName: '',
+      server: 8080
     }
   },
   methods: {
@@ -119,7 +119,7 @@ export default {
       files.forEach(file => {
         formData.append('files', file)
       })
-      fetch('http://localhost:3000/upload', {
+      fetch(`http://localhost:${this.server}/upload`, {
         method: 'POST',
         body: formData
       })
@@ -139,7 +139,7 @@ export default {
       console.log('here')
       const fileName = this.uploadedFiles[index].name
       console.log('Suppression du fichier', fileName)
-      fetch(`http://localhost:3000/delete?fileName=${encodeURIComponent(fileName)}`, {
+      fetch(`http://localhost:${this.server}/delete?fileName=${encodeURIComponent(fileName)}`, {
         method: 'DELETE'
       })
         .then(response => response.json())

@@ -79,9 +79,6 @@
       <div v-if="courseSummaryUrl" class="course-summary section">
         <h2>Fiche de cours générée</h2>
         <iframe :src="courseSummaryUrl" width="100%" height="500px"></iframe>
-        <a :href="courseSummaryUrl" download="fiche-de-cours.pdf" class="download-button">
-          Télécharger la fiche de cours
-        </a>
       </div>
     </div>
   </div>
@@ -99,7 +96,8 @@ export default {
       courseSummaryUrl: null,
       selectedSubject: '',
       courseName: '',
-      detailLevel: 'Détaillé'
+      detailLevel: 'Détaillé',
+      server: 8080
     }
   },
   methods: {
@@ -114,7 +112,7 @@ export default {
       files.forEach(file => {
         formData.append('files', file)
       })
-      fetch('http://localhost:3000/upload', {
+      fetch(`http://localhost:${this.server}/upload`, {
         method: 'POST',
         body: formData
       })
@@ -134,7 +132,7 @@ export default {
       console.log('here')
       const fileName = this.uploadedFiles[index].name
       console.log('Suppression du fichier', fileName)
-      fetch(`http://localhost:3000/delete?fileName=${encodeURIComponent(fileName)}`, {
+      fetch(`http://localhost:${this.server}/delete?fileName=${encodeURIComponent(fileName)}`, {
         method: 'DELETE'
       })
         .then(response => response.json())

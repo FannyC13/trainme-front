@@ -36,4 +36,7 @@ app.delete('/delete', (req, res) => {
   })
 })
 
-app.listen(3000, () => console.log('Serveur démarré sur le port 3000'))
+const SERVER = 8080
+module.exports = { SERVER }
+
+app.listen(SERVER, () => console.log(`Serveur démarré sur le port  ${SERVER}`))
