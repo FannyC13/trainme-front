@@ -129,7 +129,6 @@ export default {
       this.uploadedFiles.push(...files)
     },
     removeFile (index) {
-      console.log('here')
       const fileName = this.uploadedFiles[index].name
       console.log('Suppression du fichier', fileName)
       fetch(`http://localhost:${this.server}/delete?fileName=${encodeURIComponent(fileName)}`, {
@@ -138,7 +137,6 @@ export default {
         .then(response => response.json())
         .then(data => {
           console.log(data.message)
-          // Retirer le fichier de la liste affichée
           this.uploadedFiles.splice(index, 1)
         })
         .catch(error => {
@@ -150,55 +148,82 @@ export default {
     },
     async generateSummary () {
       this.loading = true
-      const fileName = this.uploadedFiles[0].name
-      console.log('File', fileName)
+
+      const fileName = this.uploadedFiles[0]?.name
+
+      if (!fileName) {
+        alert('Veuillez télécharger un fichier avant de générer une synthèse.')
+        this.loading = false
+        return
+      }
+
+      console.log('File Name:', fileName)
+
       try {
-        if (this.uploadedFiles.length === 0) {
-          alert('Veuillez télécharger un fichier avant de générer une synthèse.')
-          return
+        const path = `${process.env.VUE_APP_PDF_BASE_PATH}\\\\${fileName}`
+        console.log('Path', path)
+        const extractResponse = await fetch('http://localhost:5000/extract/pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ pdf_name: fileName })
+        })
+
+        const extractData = await extractResponse.json()
+
+        if (!extractResponse.ok) {
+          throw new Error(`Erreur lors de l'extraction : ${extractData.error || 'Erreur inconnue.'}`)
         }
 
-        const pdfName = this.uploadedFiles[0].name
-        const response = await fetch('http://localhost:5000/test/pdf', {
+        const extractedText = extractData.text
+
+        if (!extractedText) {
+          throw new Error('Le texte extrait est vide.')
+        }
+
+        console.log('Texte extrait avec succès:', extractedText)
+        const summarizeResponse = await fetch('http://localhost:5000/summarize', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            pdf_name: pdfName,
+            text: extractedText,
             max_length: 130,
-            min_length: 30,
-            model: 'facebook/bart-large-cnn'
+            min_length: 30
           })
         })
 
-        const data = await response.json()
+        const summarizeData = await summarizeResponse.json()
 
-        if (response.ok) {
-          const generatedContent = `
-            ${this.selectedSubject} : ${this.courseName}
+        if (!summarizeResponse.ok) {
+          throw new Error(`Erreur lors de la synthèse : ${summarizeData.error || 'Erreur inconnue.'}`)
+        }
+
+        console.log('Synthèse générée avec succès:', summarizeData.summary)
+
+        // Étape 3 : Générer un PDF contenant la synthèse
+        const generatedContent = `
+          ${this.selectedSubject} : ${this.courseName}
 
           Synthèse générée automatiquement :
-          ${data.summary}
+          ${summarizeData.summary}
         `
-          const pdf = new jsPDF()
-          pdf.setFontSize(16)
-          pdf.text(`Fiche de cours - ${this.selectedSubject}`, 10, 10)
-          pdf.setFontSize(12)
-          pdf.text(generatedContent, 10, 20, { maxWidth: 180 })
 
-          const pdfBlob = pdf.output('blob')
-          this.courseSummaryUrl = URL.createObjectURL(pdfBlob)
-        } else {
-          alert(`Erreur : ${data.error || 'Une erreur est survenue.'}`)
-        }
+        const pdf = new jsPDF()
+        pdf.setFontSize(16)
+        pdf.text(`Fiche de cours - ${this.selectedSubject}`, 10, 10)
+        pdf.setFontSize(12)
+        pdf.text(generatedContent, 10, 20, { maxWidth: 180 })
+        const pdfBlob = pdf.output('blob')
+        this.courseSummaryUrl = URL.createObjectURL(pdfBlob)
       } catch (error) {
-        alert(`Erreur lors de la génération : ${error.message}`)
+        alert(`Erreur : ${error.message}`)
       } finally {
         this.loading = false
       }
     },
-
     getFileIcon (fileName) {
       const extension = fileName.split('.').pop().toLowerCase()
       const icons = {

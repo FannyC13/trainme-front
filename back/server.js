@@ -10,7 +10,16 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 
 app.use('/api', createProxyMiddleware({
   target: 'http://127.0.0.1:5000',
-  changeOrigin: true
+  changeOrigin: true,
+  onProxyRes: function (proxyRes, req, res) {
+    proxyRes.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080'
+  }
+}))
+
+app.use(cors({
+  origin: 'http://localhost:8080',
+  methods: ['GET', 'POST', 'DELETE', 'PUT'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 app.use(cors())

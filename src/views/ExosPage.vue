@@ -37,55 +37,58 @@
               </div>
               <button class="remove-file" @click="removeFile(index)">✖</button>
             </div>
-            <button class="generate-qcm" @click="generateQCM">Générer le QCM</button>
+            <button class="generate-qcm" @click="generateQCM" :disabled="loading">
+              {{ loading ? 'Chargement du qcm...' : 'Générer le QCM' }}
+            </button>
           </div>
         </div>
       </div>
 
-      <div v-if="uploadedFiles.length && qcmQuestions.length" class="qcm-section section">
-        <h2>Exercice QCM généré</h2>
+      <div v-if="!loading" class="qcm-section section">
+      <h2>Exercice QCM généré</h2>
 
-        <div v-if="loading" class="loading-indicator">
-          <p>Chargement du QCM...</p>
-        </div>
-
-        <div v-if="!loading && qcmQuestions.length">
-          <form @submit.prevent="submitAnswers">
-            <div v-for="(question, index) in qcmQuestions" :key="index" class="question-container">
-              <p>{{ question.question }}</p>
-              <div v-for="(option, idx) in question.options" :key="idx" class="option">
-                <input
-                  type="radio"
-                  :name="'question' + index"
-                  :value="option"
-                  v-model="userAnswers[index]"
-                  :disabled="showResult"
-                  :class="{
-                    'correct-answer': showResult && option === question.answer && userAnswers[index] === option,
-                    'incorrect-answer': showResult && option !== question.answer && userAnswers[index] === option,
-                    'correct-but-not-answered': showResult && option === question.answer && userAnswers[index] !== option
-                  }"
-                />
-                <label :class="{
-                  'correct-answer-label': showResult && option === question.answer && userAnswers[index] === option,
-                  'incorrect-answer-label': showResult && option !== question.answer && userAnswers[index] === option,
-                  'correct-but-not-answered-label': showResult && option === question.answer && userAnswers[index] !== option
-                }">
-                  {{ option }}
-                </label>
-              </div>
-            </div>
-
-            <button type="submit">Valider les réponses</button>
-          </form>
-        </div>
-
-        <div v-if="showResult" class="result">
-          <h3>Résultats :</h3>
-          <p>Votre score : {{ score }}/{{ qcmQuestions.length }}</p>
-          <button @click="downloadQcmPdf">Télécharger le QCM corrigé</button>
-        </div>
+      <div v-if="loading" class="loading-indicator">
+        <p>Chargement du QCM...</p>
       </div>
+
+      <div v-else>
+        <form @submit.prevent="submitAnswers">
+          <div v-for="(question, index) in qcmQuestions" :key="index" class="question-container">
+            <p>{{ question.question }}</p>
+            <div v-for="(option, idx) in question.options" :key="idx" class="option">
+              <input
+                type="radio"
+                :name="'question' + index"
+                :value="option"
+                v-model="userAnswers[index]"
+                :disabled="showResult"
+                :class="{
+                  'correct-answer': showResult && option === question.answer && userAnswers[index] === option,
+                  'incorrect-answer': showResult && option !== question.answer && userAnswers[index] === option,
+                  'correct-but-not-answered': showResult && option === question.answer && userAnswers[index] !== option
+                }"
+              />
+              <label :class="{
+                'correct-answer-label': showResult && option === question.answer && userAnswers[index] === option,
+                'incorrect-answer-label': showResult && option !== question.answer && userAnswers[index] === option,
+                'correct-but-not-answered-label': showResult && option === question.answer && userAnswers[index] !== option
+              }">
+                {{ option }}
+              </label>
+            </div>
+          </div>
+
+          <button type="submit">Valider les réponses</button>
+        </form>
+      </div>
+
+      <div v-if="showResult" class="result">
+        <h3>Résultats :</h3>
+        <p>Votre score : {{ score }}/{{ qcmQuestions.length }}</p>
+        <button @click="downloadQcmPdf">Télécharger le QCM corrigé</button>
+      </div>
+    </div>
+
     </div>
   </div>
 </template>
@@ -154,22 +157,68 @@ export default {
     },
     async generateQCM () {
       this.loading = true
+
+      const fileName = this.uploadedFiles[0]?.name
+
+      if (!fileName) {
+        alert('Veuillez télécharger un fichier avant de générer une synthèse.')
+        return
+      }
+
+      console.log('File Name:', fileName)
+
       try {
-        this.qcmQuestions = [
-          {
-            question: 'Quelle est la formule de l\'aire d\'un cercle ?',
-            options: ['πr²', '2πr', 'πd', 'r²'],
-            answer: 'πr²'
+        const extractResponse = await fetch('http://localhost:5000/extract/pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
           },
-          {
-            question: 'Qui a écrit \'Les Misérables\' ?',
-            options: ['Victor Hugo', 'Emile Zola', 'Marcel Proust', 'Albert Camus'],
-            answer: 'Victor Hugo'
-          }
-        ]
+          body: JSON.stringify({ pdf_name: fileName })
+        })
+
+        const extractData = await extractResponse.json()
+
+        if (!extractResponse.ok) {
+          throw new Error(`Erreur lors de l'extraction : ${extractData.error || 'Erreur inconnue.'}`)
+        }
+
+        const extractedText = extractData.text
+
+        if (!extractedText) {
+          throw new Error('Le texte extrait est vide.')
+        }
+
+        console.log('Texte extrait avec succès:', extractedText)
+        const apiKey = process.env.VUE_APP_API_KEY || ''
+        if (!apiKey) {
+          alert("La clé API n'est pas configurée.")
+          return
+        }
+        const qcmResponse = await fetch('http://localhost:5000/generate/qcm', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            raw_text: extractedText,
+            api_key: apiKey,
+            model: 'gpt-4o-mini'
+          })
+        })
+        const qcmData = await qcmResponse.json()
+        const qcmArray = Array.isArray(qcmData.questions) ? qcmData.questions : [qcmData.questions]
+        const formatJsonKeys = (data) => {
+          return JSON.stringify(data, null, 2)
+        }
+        const qcmFormatted = formatJsonKeys(qcmArray[0])
+        console.log(qcmFormatted)
+        this.qcmQuestions = JSON.parse(qcmFormatted)
         this.userAnswers = new Array(this.qcmQuestions.length).fill('')
+        if (!qcmData) {
+          throw new Error(`${qcmData.error || 'Erreur inconnue.'}`)
+        }
       } catch (error) {
-        alert('Erreur : ' + error.message)
+        alert(`Erreur lors de la génération : ${error.message}`)
       } finally {
         this.loading = false
       }
