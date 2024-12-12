@@ -3,21 +3,32 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 const cors = require('cors')
-
 const app = express()
-const uploadFolder = path.join(__dirname, 'course')
+
 const { createProxyMiddleware } = require('http-proxy-middleware')
+const { debug } = require('console')
+
+require('dotenv').config();
+console.log("AAAAAAAAAAAAAAAaaa")
+const folder = process.env.VUE_APP_PDF_BASE_PATH;
+
+if (!folder) {
+  throw new Error('VUE_APP_PDF_BASE_PATH is not defined in .env');
+}
+
+const uploadFolder = path.join(folder, 'course');
+console.log('Upload folder:', uploadFolder);
 
 app.use('/api', createProxyMiddleware({
-  target: 'http://127.0.0.1:5000',
+  target: 'https://geddhloie9nywe-5000.proxy.runpod.net/',
   changeOrigin: true,
   onProxyRes: function (proxyRes, req, res) {
-    proxyRes.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080'
+    proxyRes.headers['Access-Control-Allow-Origin'] = 'https://geddhloie9nywe-8080.proxy.runpod.net/'
   }
 }))
 
 app.use(cors({
-  origin: 'http://localhost:8080',
+  origin: 'https://geddhloie9nywe-8080.proxy.runpod.net/',
   methods: ['GET', 'POST', 'DELETE', 'PUT'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }))
@@ -35,7 +46,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 app.post('/upload', upload.array('files'), (req, res) => {
-  res.send({ message: 'Fichiers téléchargés avec succès' })
+  res.send({ message: 'Fichiers téléchargés avec succès TEST', uploadFolder })
 })
 
 app.delete('/delete', (req, res) => {
@@ -50,7 +61,9 @@ app.delete('/delete', (req, res) => {
   })
 })
 
-const SERVER = 8084
-module.exports = { SERVER }
+const HOST = '0.0.0.0';
+const PORT = 8084;
 
-app.listen(SERVER, () => console.log(`Serveur démarré sur le port  ${SERVER}`))
+app.listen(PORT, HOST, () => {
+  console.log(`Serveur démarré sur http://${HOST}:${PORT}`);
+});

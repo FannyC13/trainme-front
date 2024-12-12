@@ -112,7 +112,7 @@ export default {
       files.forEach(file => {
         formData.append('files', file)
       })
-      fetch(`http://localhost:${this.server}/upload`, {
+      fetch(`https://geddhloie9nywe-${this.server}.proxy.runpod.net/upload`, {
         method: 'POST',
         body: formData
       })
@@ -131,7 +131,7 @@ export default {
     removeFile (index) {
       const fileName = this.uploadedFiles[index].name
       console.log('Suppression du fichier', fileName)
-      fetch(`http://localhost:${this.server}/delete?fileName=${encodeURIComponent(fileName)}`, {
+      fetch(`https://geddhloie9nywe-${this.server}.proxy.runpod.net/delete?fileName=${encodeURIComponent(fileName)}`, {
         method: 'DELETE'
       })
         .then(response => response.json())
@@ -162,7 +162,7 @@ export default {
       try {
         const path = `${process.env.VUE_APP_PDF_BASE_PATH}\\\\${fileName}`
         console.log('Path', path)
-        const extractResponse = await fetch('http://localhost:5000/extract/pdf', {
+        const extractResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/extract/pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -183,7 +183,7 @@ export default {
         }
 
         console.log('Texte extrait avec succès:', extractedText)
-        const summarizeResponse = await fetch('http://localhost:5000/summarize', {
+        const summarizeResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/summarize', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
