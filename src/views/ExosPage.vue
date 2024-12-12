@@ -203,7 +203,6 @@ export default {
           return
         }
         const qcmResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/generate/qcm', {
-          mode: 'no-cors',
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

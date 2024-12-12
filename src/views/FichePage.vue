@@ -18,12 +18,7 @@
 
         <div class="form-group">
           <label for="course-name">Nom du cours :</label>
-          <input
-            id="course-name"
-            type="text"
-            v-model="courseName"
-            placeholder="Ex : Calcul intégral"
-          />
+          <input id="course-name" type="text" v-model="courseName" placeholder="Ex : Calcul intégral" />
         </div>
 
         <div class="upload-box" @dragover.prevent @drop.prevent="handleDrop">
@@ -31,35 +26,23 @@
             <p>Glissez et déposez vos fichiers ici</p>
 
             <div class="detail-buttons">
-              <button
-                class="detail-button"
-                :class="{ active: detailLevel === 'Très détaillé' }"
+              <button class="detail-button" :class="{ active: detailLevel === 'Très détaillé' }"
                 @click="setDetailLevel('Très détaillé')">
                 Très détaillé
               </button>
-              <button
-                class="detail-button"
-                :class="{ active: detailLevel === 'Détaillé' }"
+              <button class="detail-button" :class="{ active: detailLevel === 'Détaillé' }"
                 @click="setDetailLevel('Détaillé')">
                 Détaillé
               </button>
-              <button
-                class="detail-button"
-                :class="{ active: detailLevel === 'Synthétisé' }"
+              <button class="detail-button" :class="{ active: detailLevel === 'Synthétisé' }"
                 @click="setDetailLevel('Synthétisé')">
                 Synthétisé
               </button>
             </div>
 
             <button @click="triggerFileInput">Télécharger</button>
-            <input
-              type="file"
-              ref="fileInput"
-              style="display: none"
-              @change="handleFileSelect"
-              accept=".pdf,.ppt,.docx,.png,.jpg"
-              multiple
-            />
+            <input type="file" ref="fileInput" style="display: none" @change="handleFileSelect"
+              accept=".pdf,.ppt,.docx,.png,.jpg" multiple />
           </div>
           <div v-else class="file-list">
             <div class="file-item" v-for="(file, index) in uploadedFiles" :key="file.name">
@@ -85,11 +68,11 @@
 </template>
 
 <script>
-import jsPDF from 'jspdf'
-
+import html2pdf from 'html2pdf.js'
+import { marked } from 'marked'
 export default {
   name: 'FichePage',
-  data () {
+  data() {
     return {
       uploadedFiles: [],
       loading: false,
@@ -102,10 +85,10 @@ export default {
   },
   methods: {
     /* eslint-disable new-cap */
-    triggerFileInput () {
+    triggerFileInput() {
       this.$refs.fileInput.click()
     },
-    handleFileSelect (event) {
+    handleFileSelect(event) {
       const files = Array.from(event.target.files)
       this.uploadedFiles.push(...files)
       const formData = new FormData()
@@ -124,11 +107,11 @@ export default {
           console.error('Erreur lors du téléchargement des fichiers :', error)
         })
     },
-    handleDrop (event) {
+    handleDrop(event) {
       const files = Array.from(event.dataTransfer.files)
       this.uploadedFiles.push(...files)
     },
-    removeFile (index) {
+    removeFile(index) {
       const fileName = this.uploadedFiles[index].name
       console.log('Suppression du fichier', fileName)
       fetch(`https://geddhloie9nywe-${this.server}.proxy.runpod.net/delete?fileName=${encodeURIComponent(fileName)}`, {
@@ -143,10 +126,10 @@ export default {
           console.error('Erreur lors de la suppression du fichier :', error)
         })
     },
-    setDetailLevel (level) {
+    setDetailLevel(level) {
       this.detailLevel = level
     },
-    async generateSummary () {
+    async generateSummary() {
       this.loading = true
 
       const fileName = this.uploadedFiles[0]?.name
@@ -160,14 +143,14 @@ export default {
       console.log('File Name:', fileName)
 
       try {
-        const path = `${process.env.VUE_APP_PDF_BASE_PATH}\\\\${fileName}`
+        const path = `${process.env.VUE_APP_PDF_BASE_PATH}/${fileName}`
         console.log('Path', path)
         const extractResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/extract/pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ pdf_name: fileName })
+          body: JSON.stringify({ pdf_path: path })
         })
 
         const extractData = await extractResponse.json()
@@ -183,13 +166,19 @@ export default {
         }
 
         console.log('Texte extrait avec succès:', extractedText)
-        const summarizeResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/summarize', {
+        const apiKey = process.env.VUE_APP_API_KEY || ''
+        if (!apiKey) {
+          alert("La clé API n'est pas configurée.")
+          return
+        }
+        const summarizeResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/summarize/pretty', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             text: extractedText,
+            api_key: apiKey,
             max_length: 130,
             min_length: 30
           })
@@ -203,40 +192,55 @@ export default {
 
         console.log('Synthèse générée avec succès:', summarizeData.summary)
 
-        // Étape 3 : Générer un PDF contenant la synthèse
-        const generatedContent = `
-          ${this.selectedSubject} : ${this.courseName}
+        const markdownContent = summarizeData.summary;
+    const htmlContent = marked(markdownContent); // Convert Markdown to HTML
 
-          Synthèse générée automatiquement :
-          ${summarizeData.summary}
-        `
+    // Create a temporary div to hold the HTML content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    tempDiv.style.margin = '20px'; // Add margin for better layout
 
-        const pdf = new jsPDF()
-        pdf.setFontSize(16)
-        pdf.text(`Fiche de cours - ${this.selectedSubject}`, 10, 10)
-        pdf.setFontSize(12)
-        pdf.text(generatedContent, 10, 20, { maxWidth: 180 })
-        const pdfBlob = pdf.output('blob')
-        this.courseSummaryUrl = URL.createObjectURL(pdfBlob)
+    // Use html2pdf to generate PDF
+    const options = {
+      filename: `Fiche_de_cours_${this.selectedSubject}.pdf`, // File name
+      margin: 10, // Margin around the page
+      image: { type: 'jpeg', quality: 0.98 }, // Image format for PDF (optional)
+      html2canvas: { scale: 4 }, // High-quality rendering
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // PDF format and orientation
+    };
+
+    // Use html2pdf to generate the PDF and display the result
+    html2pdf()
+      .from(tempDiv)
+      .set(options)
+      .toPdf()
+      .get('pdf')
+      .then((pdf) => {
+        const pdfBlob = pdf.output('blob');
+        this.courseSummaryUrl = URL.createObjectURL(pdfBlob);
+        console.log('Generated PDF URL:', this.courseSummaryUrl);
+      });
+
+
+
       } catch (error) {
-        alert(`Erreur : ${error.message}`)
+        alert(`Erreur : ${error.message}`);
       } finally {
-        this.loading = false
+        this.loading = false;
+      }},
+      getFileIcon(fileName) {
+        const extension = fileName.split('.').pop().toLowerCase()
+        const icons = {
+          pdf: '📄',
+          docx: '📄',
+          ppt: '📊',
+          png: '🖼️',
+          jpg: '🖼️'
+        }
+        return icons[extension] || '📁'
       }
-    },
-    getFileIcon (fileName) {
-      const extension = fileName.split('.').pop().toLowerCase()
-      const icons = {
-        pdf: '📄',
-        docx: '📄',
-        ppt: '📊',
-        png: '🖼️',
-        jpg: '🖼️'
-      }
-      return icons[extension] || '📁'
     }
   }
-}
 </script>
 
 <style src="../styles.css"></style>
