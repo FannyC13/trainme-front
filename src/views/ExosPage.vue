@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <div v-if="!loading" class="qcm-section section">
+      <div v-if="!loading & qcmQuestions.length>0" class="qcm-section section">
       <h2>Exercice QCM généré</h2>
 
       <div v-if="loading" class="loading-indicator">
@@ -157,6 +157,12 @@ export default {
     },
     async generateQCM () {
       this.loading = true
+      this.qcmQuestions = []
+      this.userAnswers = []
+      this.showResult = false
+      this.score = 0
+      this.selectedSubject = ''
+      this.courseName = ''
 
       const fileName = this.uploadedFiles[0]?.name
 
@@ -205,12 +211,10 @@ export default {
             model: 'gpt-4o-mini'
           })
         })
+
         const qcmData = await qcmResponse.json()
-        const qcmArray = Array.isArray(qcmData.questions) ? qcmData.questions : [qcmData.questions]
-        const formatJsonKeys = (data) => {
-          return JSON.stringify(data, null, 2)
-        }
-        const qcmFormatted = formatJsonKeys(qcmArray[0])
+        const qcmFormatted = Array.isArray(qcmData.questions) ? qcmData.questions : [qcmData.questions]
+
         console.log(qcmFormatted)
         this.qcmQuestions = JSON.parse(qcmFormatted)
         this.userAnswers = new Array(this.qcmQuestions.length).fill('')
