@@ -159,7 +159,7 @@ export default {
         }
 
         const pdfName = this.uploadedFiles[0].name
-        const response = await fetch(`http://localhost:${this.server}/process/pdf`, {
+        const response = await fetch('http://localhost:5000/test/pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
