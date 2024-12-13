@@ -25,20 +25,6 @@
           <div v-if="uploadedFiles.length === 0" class="upload-content">
             <p>Glissez et déposez vos fichiers ici</p>
 
-            <div class="detail-buttons">
-              <button class="detail-button" :class="{ active: detailLevel === 'Très détaillé' }"
-                @click="setDetailLevel('Très détaillé')">
-                Très détaillé
-              </button>
-              <button class="detail-button" :class="{ active: detailLevel === 'Détaillé' }"
-                @click="setDetailLevel('Détaillé')">
-                Détaillé
-              </button>
-              <button class="detail-button" :class="{ active: detailLevel === 'Synthétisé' }"
-                @click="setDetailLevel('Synthétisé')">
-                Synthétisé
-              </button>
-            </div>
 
             <button @click="triggerFileInput">Télécharger</button>
             <input type="file" ref="fileInput" style="display: none" @change="handleFileSelect"
@@ -143,15 +129,15 @@ export default {
       console.log('File NameA:', fileName)
 
       try {
-        const path = `${process.env.VUE_APP_PDF_BASE_PATH}/${fileName}`
+        const path = `${process.env.VUE_APP_PDF_BASE_PATH}//${fileName}`
 
-        console.log('PathA', path)
+        console.log('Path test here', path)
         const extractResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/extract/pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ pdf_path: '/workspace/LLM-project/pdfs/course/Romantisme.pdf' })
+          body: JSON.stringify({ pdf_path: path })
         })
 
         const extractData = await extractResponse.json()
@@ -194,33 +180,33 @@ export default {
         console.log('Synthèse générée avec succès:', summarizeData.summary)
 
         const markdownContent = summarizeData.summary;
-    const htmlContent = marked(markdownContent); // Convert Markdown to HTML
+        const htmlContent = marked(markdownContent); // Convert Markdown to HTML
 
-    // Create a temporary div to hold the HTML content
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
-    tempDiv.style.margin = '20px'; // Add margin for better layout
+        // Create a temporary div to hold the HTML content
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        tempDiv.style.paddingBottom = '50px'; // Add padding to avoid content cut-off
 
-    // Use html2pdf to generate PDF
-    const options = {
-      filename: `Fiche_de_cours_${this.selectedSubject}.pdf`, // File name
-      margin: 10, // Margin around the page
-      image: { type: 'jpeg', quality: 0.98 }, // Image format for PDF (optional)
-      html2canvas: { scale: 4 }, // High-quality rendering
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // PDF format and orientation
-    };
+// Use html2pdf to generate PDF
+const options = {
+  filename: `Fiche_de_cours_${this.selectedSubject}.pdf`, // File name
+  margin: 10, // Margin around the page
+  image: { type: 'jpeg', quality: 0.98 }, // Image format for PDF (optional)
+  html2canvas: { scale: 4 }, // High-quality rendering
+  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // PDF format and orientation
+};
 
-    // Use html2pdf to generate the PDF and display the result
-    html2pdf()
-      .from(tempDiv)
-      .set(options)
-      .toPdf()
-      .get('pdf')
-      .then((pdf) => {
-        const pdfBlob = pdf.output('blob');
-        this.courseSummaryUrl = URL.createObjectURL(pdfBlob);
-        console.log('Generated PDF URL:', this.courseSummaryUrl);
-      });
+// Use html2pdf to generate the PDF and display the result
+html2pdf()
+  .from(tempDiv)
+  .set(options)
+  .toPdf()
+  .get('pdf')
+  .then((pdf) => {
+    const pdfBlob = pdf.output('blob');
+    this.courseSummaryUrl = URL.createObjectURL(pdfBlob);
+    console.log('Generated PDF URL:', this.courseSummaryUrl);
+  });
 
 
 
