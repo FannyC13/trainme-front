@@ -140,17 +140,18 @@ export default {
         return
       }
 
-      console.log('File Name:', fileName)
+      console.log('File NameA:', fileName)
 
       try {
         const path = `${process.env.VUE_APP_PDF_BASE_PATH}/${fileName}`
-        console.log('Path', path)
+
+        console.log('PathA', path)
         const extractResponse = await fetch('https://geddhloie9nywe-5000.proxy.runpod.net/extract/pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ pdf_path: path })
+          body: JSON.stringify({ pdf_path: '/workspace/LLM-project/pdfs/course/Romantisme.pdf' })
         })
 
         const extractData = await extractResponse.json()

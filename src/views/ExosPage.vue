@@ -171,7 +171,7 @@ export default {
         return
       }
 
-      console.log('File Name:', fileName)
+      console.log('File NameAA:', fileName)
 
       try {
         const path = `${process.env.VUE_APP_PDF_BASE_PATH}/${fileName}`
@@ -181,10 +181,10 @@ export default {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ pdf_path: path })
+          body: JSON.stringify({pdf_path: path })
         })
-
         const extractData = await extractResponse.json()
+        console.log(extractData)
 
         if (!extractResponse.ok) {
           throw new Error(`Erreur lors de l'extraction : ${extractData.error || 'Erreur inconnue.'}`)
