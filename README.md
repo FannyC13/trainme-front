@@ -1,6 +1,10 @@
 # llm-project
 
-## Project setup
+https://github.com/user-attachments/assets/35defbfc-7e5d-4bd3-a4fb-acd458c5c6bb
+
+## Project
+
+ setup
 ```
 npm install
 ```
