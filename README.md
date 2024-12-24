@@ -1,6 +1,6 @@
 # llm-project
 
-https://github.com/user-attachments/assets/35defbfc-7e5d-4bd3-a4fb-acd458c5c6bb
+![ezgif-1-4de13b88d0](https://github.com/user-attachments/assets/47f47965-8f1a-40fb-9b3d-403ac98eeb43)
 
 ## Project
 
